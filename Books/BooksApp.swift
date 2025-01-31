@@ -2,16 +2,22 @@
 //  BooksApp.swift
 //  Books
 //
-//  Created by Softsuave-iOS dev on 31/01/25.
+//  
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct BooksApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            BooksListView()
         }
+        .modelContainer(for: Book.self)
+    }
+    
+    init() {
+        print(URL.applicationSupportDirectory.path(percentEncoded: false))
     }
 }
