@@ -10,14 +10,23 @@ import SwiftData
 
 @main
 struct BooksApp: App {
+    let container: ModelContainer
     var body: some Scene {
         WindowGroup {
             BooksListView()
         }
-        .modelContainer(for: Book.self)
+        .modelContainer(container)
+       
     }
     
     init() {
+        let schema = Schema([Book.self])
+        let config = ModelConfiguration("MyBooks", schema: schema)
+        do {
+            container = try ModelContainer(for: schema, configurations: config)
+        } catch {
+            fatalError(error.localizedDescription)
+        }
         print(URL.applicationSupportDirectory.path(percentEncoded: false))
     }
 }

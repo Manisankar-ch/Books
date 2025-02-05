@@ -12,8 +12,9 @@ struct EditBookView: View {
     var book: Book
     @State private var title: String = ""
     @State private var author: String = ""
+    @State private var recommendedBy: String = ""
     @State private var dateAdded: Date = Date.distantPast
-    @State private var dateStared: Date = Date.distantPast
+    @State private var dateStarted: Date = Date.distantPast
     @State private var dateCompleted: Date = Date.distantPast
     @State private var summary: String = ""
     @State private var rating: Int?
@@ -35,24 +36,39 @@ struct EditBookView: View {
                 GroupBox {
                     LabeledContent("Added date") {
                         DatePicker("", selection: $dateAdded,
+                                   in: ...Date(),
                                    displayedComponents: .date)
                     }
-                    if book.status == .reading || book.status == .completed {
+                    if status == .reading || status == .completed {
                         LabeledContent("Started date") {
-                            DatePicker("", selection: $dateStared,
+                            DatePicker("", selection: $dateStarted, in: dateAdded...Date(),
                                        displayedComponents: .date)
                         }
                     }
-                    if book.status == .completed {
+                    if status == .completed {
                         LabeledContent("Completed date") {
                             DatePicker("", selection: $dateCompleted,
+                                       in: dateStarted...Date(),
                                        displayedComponents: .date)
                         }
                     }
                 }
-                .onChange(of: book.status) { onValue, newValue in
+                .onChange(of: status) { oldValue, newValue in
                     if !isFirstTime {
-                        
+                        if newValue == .toRead {
+                            dateStarted = Date.distantPast
+                            dateCompleted = Date.distantPast
+                            
+                        } else if newValue == .reading, oldValue == .completed {
+                            dateCompleted = Date.distantPast
+                        } else if newValue == .reading, oldValue == .toRead {
+                            dateStarted = Date.now
+                        } else if newValue == .completed, oldValue == .toRead {
+                            dateCompleted = Date.now
+                            dateStarted = dateAdded
+                        } else {
+                            dateCompleted = Date.now
+                        }
                     }
                     isFirstTime = false
                 }
@@ -75,12 +91,24 @@ struct EditBookView: View {
                     } label: {
                         Text("Author").foregroundStyle(.secondary)
                     }
+                    //Recommended by
+                    LabeledContent {
+                        TextField("Unknown", text: $recommendedBy)
+                            .multilineTextAlignment(.trailing)
+                    } label: {
+                        Text("RecommendedBy:").foregroundStyle(.secondary)
+                    }
                     Divider()
                     Text("Summary:")
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     TextEditor(text: $summary)
                         .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 0.5))
+                    NavigationLink(destination: QuotationListView(book: book)) {
+                        let count = book.quote?.count ?? 0
+                        Label("^[\(count) Quote](inflect: true)", systemImage: "quote.opening")
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                    }
                 }
                 .padding()
                 .navigationTitle(book.title)
@@ -90,10 +118,12 @@ struct EditBookView: View {
                         book.title = title
                         book.author = author
                         book.dateAdded = dateAdded
-                        book.dateStared = dateStared
+                        book.dateStarted = dateStarted
                         book.dateCompleted = dateCompleted
                         book.rating = rating
                         book.status = status
+                        book.summary = summary
+                        book.recommendedBy = recommendedBy
                         dismiss()
                     }
                     .buttonStyle(.borderedProminent)
@@ -105,10 +135,12 @@ struct EditBookView: View {
             title = book.title
             author = book.author
             dateAdded = book.dateAdded
-            dateStared = book.dateStared
+            dateStarted = book.dateStarted
             dateCompleted = book.dateCompleted
             rating = book.rating
             status = book.status
+            summary = book.summary
+            recommendedBy = book.recommendedBy
         }
     }
     private var hasChanges: Bool {
@@ -118,14 +150,17 @@ struct EditBookView: View {
         book.rating != rating ||
         book.status != status ||
         book.dateAdded != dateAdded ||
-        book.dateStared != dateStared ||
-        book.dateCompleted != dateCompleted
+        book.dateStarted != dateStarted ||
+        book.dateCompleted != dateCompleted ||
+        book.recommendedBy != recommendedBy
     }
 }
 
 #Preview {
-    @Previewable @State var book = Book(title: "title", author: "author", dateAdded: Date.distantPast, dateStared: Date.distantPast, dateCompleted: Date.distantPast, summary: "summary", rating: 2, status: .reading)
+    let preview = Preview(Book.self)
+    
     NavigationStack {
-        EditBookView(book: book)
+        EditBookView(book: Book.sampleBooks[4])
+            .modelContainer(preview.container)
     }
 }

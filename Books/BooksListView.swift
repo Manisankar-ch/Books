@@ -9,32 +9,25 @@ import SwiftUI
 import SwiftData
 
 struct BooksListView: View {
-    @Environment(\.modelContext) var context
-    @Query(sort: \Book.title) var books: [Book]
+    @Query var books: [Book]
     @State private var showAddBookSheet = false
+    @State private var sortStatus: SortOrder = .author
+    @State private var searchText: String = ""
     var body: some View {
         NavigationStack {
-            Group {
-                if books.isEmpty {
-                    ContentUnavailableView("Enter your first book", systemImage: "book.fill")
-                } else {
-                    List {
-                        ForEach(books) { book in
-                            NavigationLink(destination: EditBookView(book: book)) {
-                                BookListItemView(book: book)
-                            }
-                        }
-                        .onDelete { indexSet in
-                            indexSet.forEach { index in
-                                let book = self.books[index]
-                                context.delete(book)
-                                
-                            }
+            if !books.isEmpty {
+                HStack {
+                    Picker("Status", selection: $sortStatus) {
+                        ForEach(SortOrder.allCases) { status in
+                            Text("Sory by \(status.rawValue)").tag(status)
                         }
                     }
-                    .listStyle(.plain)
+                    .buttonStyle(.borderedProminent)
                 }
             }
+            BookList(sortStatus: sortStatus, filter: searchText)
+               
+                .showSearchBar(!books.isEmpty, text: $searchText, placeHolderText: "Filter on title or author")
             .navigationTitle("My Books")
             .toolbar {
                 Button {
@@ -55,35 +48,29 @@ struct BooksListView: View {
 }
 
 #Preview {
-//    BookListItemView(book: Book(title: "test", author: "author"))
-    BooksListView()
+    let preview = Preview(Book.self)
+    preview.addExamples(Book.sampleBooks)
+    return BooksListView()
+        .modelContainer(preview.container)
 }
 
-struct BookListItemView: View {
-    var book: Book
-    var body: some View {
-        HStack {
-            book.icon
-            VStack {
-                Text(book.title)
-                Text(book.author)
-            }
-            Spacer()
-            VStack {
-                Spacer()
-                HStack {
-                    ForEach(0..<(book.rating ?? 0), id: \.self) {_ in
-                        Image(systemName: "star.fill")
-                            .resizable()
-                            .imageScale(.medium)
-                            .foregroundStyle(.yellow)
-                            .frame(width: 15, height: 15)
-                    }
-                }
-            }
 
-               
+extension View {
+    func showSearchBar(_ show: Bool, text: Binding<String>, placeHolderText: String) -> some View {
+        modifier(ShowSearchBar(show: show, text: text, placeHolderText: placeHolderText))
+       }
+}
+
+struct ShowSearchBar: ViewModifier {
+    let show: Bool
+    @Binding var text: String
+    var placeHolderText: String
+    func body(content: Content) -> some View {
+        if show {
+             content
+                .searchable(text: $text , prompt: Text(placeHolderText))
+        } else {
+            content
         }
-        .padding()
     }
 }
