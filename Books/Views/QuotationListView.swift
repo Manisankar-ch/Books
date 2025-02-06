@@ -2,7 +2,6 @@
 //  QuotationListView.swift
 //  Books
 //
-//  Created by Softsuave-iOS dev on 05/02/25.
 //
 
 import SwiftUI
@@ -10,6 +9,7 @@ import SwiftUI
 struct QuotationListView: View {
     var book: Book
     @State private var selectedQuote: Quote?
+    @Environment(\.modelContext) private var context
     var isEditing: Bool {
         selectedQuote != nil
     }
@@ -20,6 +20,8 @@ struct QuotationListView: View {
             HStack {
                 LabeledContent("Page") {
                     TextField("", text: $page)
+                        .border(Color.secondary)
+                        .frame(width: 80)
                     Spacer()
                 }
                 if isEditing {
@@ -50,18 +52,20 @@ struct QuotationListView: View {
             TextEditor(text: $quote)
                 .border(Color.secondary)
                 .frame(height: 50)
-                
-            List(book.quote ?? []) { quote in
-                VStack(alignment: .leading) {
-                    Text(quote.createdAt, format: .dateTime.month().day().year())
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text(quote.text)
-                    HStack {
-                        Spacer()
-                        if let page = quote.page, !page.isEmpty {
-                            Text("Page: \(page)")
-                            
+            
+            List {
+                ForEach(book.quote ?? []) { quote in
+                    VStack(alignment: .leading) {
+                        Text(quote.createdAt, format: .dateTime.month().day().year())
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(quote.text)
+                        HStack {
+                            Spacer()
+                            if let page = quote.page, !page.isEmpty {
+                                Text("Page: \(page)")
+                                
+                            }
                         }
                     }
                     .contentShape(Rectangle())
@@ -71,7 +75,14 @@ struct QuotationListView: View {
                         page = quote.page ?? ""
                     }
                 }
+                .onDelete { indexSet in
+                    indexSet.forEach { index in
+                        self.book.quote!.remove(at: index)
+                        
+                    }
+                }
             }
+            .listStyle(.plain)
         }
         .padding(.horizontal)
     }

@@ -19,6 +19,8 @@ class Book {
     var recommendedBy: String = ""
     @Relationship(deleteRule: .cascade)
     var quote: [Quote]?
+    @Relationship(inverse: \Genres.books)
+    var genres: [Genres]?
     
     @Attribute()
     var statusRawValue: Int = 0

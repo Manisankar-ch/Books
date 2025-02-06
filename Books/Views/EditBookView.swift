@@ -20,6 +20,7 @@ struct EditBookView: View {
     @State private var rating: Int?
     @State private var status: Status = .toRead
     @State private var isFirstTime: Bool = true
+    @State private var genre: Bool = false
     var body: some View {
         NavigationStack {
             HStack {
@@ -104,11 +105,27 @@ struct EditBookView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     TextEditor(text: $summary)
                         .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 0.5))
-                    NavigationLink(destination: QuotationListView(book: book)) {
-                        let count = book.quote?.count ?? 0
-                        Label("^[\(count) Quote](inflect: true)", systemImage: "quote.opening")
-                            .frame(maxWidth: .infinity, alignment: .trailing)
+                    if let genres = book.genres {
+                        ViewThatFits {
+                            GenreStackView(genres: genres)
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                GenreStackView(genres: genres)
+                            }
+                        }
                     }
+                    HStack {
+                        Button("Generes", systemImage: "bookmark.fill" ) {
+                            genre.toggle()
+                        }
+                        .sheet(isPresented: $genre) {
+                            GenresView(book: book)
+                        }
+                        NavigationLink(destination: QuotationListView(book: book)) {
+                            let count = book.quote?.count ?? 0
+                                Label("^[\(count) Quote](inflect: true)", systemImage: "quote.opening")
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .trailing)
                 }
                 .padding()
                 .navigationTitle(book.title)
