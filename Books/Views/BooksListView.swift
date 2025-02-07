@@ -34,7 +34,7 @@ struct BooksListView: View {
                     showAddBookSheet.toggle()
                 } label: {
                     Image(systemName: "plus.circle.dashed")
-                        .imageScale(.large)
+                        .imageScale(.large).accessibilityIdentifier("Add_Book")
                     
                 }
             }

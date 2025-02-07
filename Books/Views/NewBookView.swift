@@ -15,8 +15,10 @@ struct NewBookView: View {
     var body: some View {
         NavigationStack {
             Form {
-                TextField("Title", text: $title )
+                TextField("Title", text: $title)
+                    .accessibilityIdentifier("Title")
                 TextField("Author", text: $author)
+                    .accessibilityIdentifier("Author")
                 Button(action: {
                     print("\(title) \(author)")
                     let book = Book(title: title, author: author)
@@ -25,6 +27,7 @@ struct NewBookView: View {
                 }) {
                     Text("Create")
                 }
+                .accessibilityIdentifier("Create")
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .buttonStyle(.borderedProminent)
                 .disabled(title.trim().isEmpty || author.trim().isEmpty)
