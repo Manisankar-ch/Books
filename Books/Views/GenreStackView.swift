@@ -2,7 +2,6 @@
 //  newGenre.swift
 //  Books
 //
-//  Created by Softsuave-iOS dev on 06/02/25.
 //
 
 import SwiftUI

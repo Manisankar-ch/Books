@@ -2,7 +2,6 @@
 //  Preview.swift
 //  Books
 //
-//  Created by Softsuave-iOS dev on 05/02/25.
 //
 import Foundation
 import SwiftData
