@@ -15,8 +15,8 @@ struct NewBookView: View {
     var body: some View {
         NavigationStack {
             Form {
-                TextField("title", text: $title )
-                TextField("author", text: $author)
+                TextField("Title", text: $title )
+                TextField("Author", text: $author)
                 Button(action: {
                     print("\(title) \(author)")
                     let book = Book(title: title, author: author)
